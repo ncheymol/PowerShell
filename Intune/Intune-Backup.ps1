@@ -1,7 +1,6 @@
 # Variables
 #$BackupsFoler = "D:\temp\IntuneBackup"
 $logdate = get-date -format "dd-MM-yyyy"
-$BackupPath = "$BackupsFoler\$logdate"
 
 ### BackupsFoler
 if ($null -eq $ReferenceFilePath)
@@ -15,6 +14,7 @@ $OpenFileDialog.ShowDialog() | Out-Null
 $BackupsFoler = $OpenFileDialog.SelectedPath
 }
 
+$BackupPath = "$BackupsFoler\$logdate"
 
 # Enter the credentials for an Intune Administrator.
 if ($null -eq $credential)
