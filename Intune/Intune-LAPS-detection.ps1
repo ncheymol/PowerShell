@@ -11,7 +11,7 @@ Else
     if (((Get-Date).AddDays(90) - $PasswordLastSet ) -le 0 )
         {
         Write-Host "Expired"
-        Exit 397
+        Exit 1618
         }
     Else
         {
