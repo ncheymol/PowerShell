@@ -8,4 +8,8 @@ Script descritions :
     
   Intune-CompareBackup.ps1 : Compares two full Backups, folder locations are prompted (uses John Seerden's modules, https://www.srdn.io/2019/03/backup-and-restore-your-microsoft-intune-configuration-with-powershell/)
 
-Intune-LAPS-Detection.ps1 : allows to detect the age of the local admin password. This script should be used as a detection rule in Intune for the LAPS script New-LocalAdmin.ps1 after packaging it as an IntuneWin32 app. : https://www.srdn.io/2018/09/serverless-laps-powered-by-microsoft-intune-azure-functions-and-azure-key-vault/
+  Intune-LAPS-Detection.ps1 : allows to detect the age of the local admin password. This script should be used as a detection rule in Intune for the LAPS script 
+  
+  New-LocalAdmin.ps1 after packaging it as an IntuneWin32 app. : https://www.srdn.io/2018/09/serverless-laps-powered-by-microsoft-intune-azure-functions-and-azure-key-vault/
+
+  IntuneWinAppUtil : a bunch of scripts to easily package Win32 apps in Intune
