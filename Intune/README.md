@@ -1,4 +1,4 @@
-#Intune Powershell Scripts
+Intune Powershell Scripts
 
 Script descritions :
 
