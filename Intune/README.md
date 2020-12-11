@@ -13,3 +13,6 @@ Script descritions :
   New-LocalAdmin.ps1 after packaging it as an IntuneWin32 app. : https://www.srdn.io/2018/09/serverless-laps-powered-by-microsoft-intune-azure-functions-and-azure-key-vault/
 
   IntuneWinAppUtil : a bunch of scripts to easily package Win32 apps in Intune
+  
+  
+  Bitlocker-backupkey.ps1 : Force Windows 10 to save its Bitlocker recovery key in Azure AD
