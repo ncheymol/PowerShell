@@ -1,4 +1,8 @@
-﻿$username = "LocalAdmin"
+#Author : Nicolas CHEYMOL
+#Date : 12/2019
+#Source : https://github.com/ncheymol
+
+$username = "LocalAdmin"
 $user = Get-LocalUser -Name $username -ErrorAction SilentlyContinue
 if ($user -eq $null)
     {
