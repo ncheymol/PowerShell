@@ -1,3 +1,7 @@
+#Author : Nicolas CHEYMOL
+#Date : 12/2019
+#Source : https://github.com/ncheymol
+
 #region remove accounts
 $userprofiles = Get-ChildItem -Path C:\Users | Where-Object name -NE "Public"
 foreach ($userprofile in $userprofiles)
