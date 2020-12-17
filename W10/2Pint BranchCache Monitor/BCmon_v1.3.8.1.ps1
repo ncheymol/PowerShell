@@ -1,3 +1,8 @@
+#Author : Nicolas CHEYMOL
+#Date : 12/2020
+#Source : https://github.com/ncheymol
+
+
 #region Funstions
 
 function Test-Admin 
