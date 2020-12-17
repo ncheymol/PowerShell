@@ -1,4 +1,8 @@
-﻿Start-Transcript -Path "C:\MININT\SMSOSD\OSDLOGS\9-Disable-BiometryService.log"
+#Author : Nicolas CHEYMOL
+#Date : 11/2019
+#Source : https://github.com/ncheymol
+
+Start-Transcript -Path "C:\MININT\SMSOSD\OSDLOGS\9-Disable-BiometryService.log"
 
 # Gestion des codes de sortie
 function ExitWithCode
