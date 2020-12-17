@@ -4,4 +4,4 @@
 
   Remove-CloudAccounts.ps1 : Remove registered accounts from Windows
   
-  2Pint BranchCache Monitor : Monitor Bits downloads with the free tools from 2Pint
+  2Pint BranchCache Monitor : Monitor Bits downloads and BranchCache performance with the free tools from 2Pint
