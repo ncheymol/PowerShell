@@ -1,3 +1,7 @@
+#Author : Nicolas CHEYMOL
+#Date : 04/2014
+#Source : https://github.com/ncheymol
+
 $name = Read-Host "enter the TS name to export"
 
 # Site configuration
