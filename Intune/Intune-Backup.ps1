@@ -1,3 +1,7 @@
+#Author : Nicolas CHEYMOL
+#Date : 05/2019
+#Source : https://github.com/ncheymol
+
 # Variables
 #$BackupsFoler = "D:\temp\IntuneBackup"
 $logdate = get-date -format "dd-MM-yyyy"
