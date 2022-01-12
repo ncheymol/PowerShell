@@ -1,7 +1,8 @@
-﻿param (
+param (
     [string]$Action
     )
 
+Start-Transcript -Path "C:\ProgramData\Microsoft\IntuneManagementExtension\logs\Win10Explorermode.ps1.log" -Append
 
 $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked"
 $registryPath2 = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked"
@@ -13,33 +14,33 @@ if ($Action -eq "Install")
 {
 IF(!(Test-Path $registryPath))
     {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType STRING -Force | Out-Null
+    New-Item -Path $registryPath -Force -Verbose
+    New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType STRING -Force -Verbose
     }
-    ELSE 
+ELSE 
     {
-    New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType STRING -Force | Out-Null
+    New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType STRING -Force -Verbose
     }
 
 
 IF(!(Test-Path $registryPath2))
     {
-    New-Item -Path $registryPath2 -Force | Out-Null
-    New-ItemProperty -Path $registryPath2 -Name $name -Value $value -PropertyType STRING -Force | Out-Null
+    New-Item -Path $registryPath2 -Force -Verbose
+    New-ItemProperty -Path $registryPath2 -Name $name -Value $value -PropertyType STRING -Force  -Verbose
     }
-    ELSE 
+ELSE 
     {
-    New-ItemProperty -Path $registryPath2 -Name $name -Value $value -PropertyType STRING -Force | Out-Null
+    New-ItemProperty -Path $registryPath2 -Name $name -Value $value -PropertyType STRING -Force  -Verbose
     }
-    Stop-Process -Name Explorer
-    Start-Process -FilePath explorer
+    Stop-Process -Name Explorer -Force -Verbose
+    Start-Process -FilePath explorer -Verbose
 }
 
 
 if ($Action -eq "Uninstall")
 {
-Remove-ItemProperty -Name $name -Path $registryPath
-Remove-ItemProperty -Name $name -Path $registryPath2
+Remove-ItemProperty -Name $name -Path $registryPath -Verbose
+Remove-ItemProperty -Name $name -Path $registryPath2 -Verbose
 }
 
 Exit 3010
