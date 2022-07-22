@@ -14,5 +14,6 @@ Script descritions :
 
   IntuneWinAppUtil : a bunch of scripts to easily package Win32 apps in Intune
   
+  Proactive Remediation : the scripts I use in proactive remediation to manage computers 
   
   Bitlocker-backupkey.ps1 : Force Windows 10 to save its Bitlocker recovery key in Azure AD
