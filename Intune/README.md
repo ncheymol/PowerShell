@@ -17,3 +17,5 @@ Script descritions :
   Proactive Remediation : the scripts I use in proactive remediation to manage computers 
   
   Bitlocker-backupkey.ps1 : Force Windows 10 to save its Bitlocker recovery key in Azure AD
+
+  PowerCFG-Autopilot.ps1 : Set High Perf and disable Sleep during Autopilot
