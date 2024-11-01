@@ -1,0 +1,193 @@
+<#
+.SYNOPSIS
+    This script is provided As Is with no support. You can contact me on github or linkedin if you have any question or remark.
+
+.DESCRIPTION
+	Proactive monitoring of Windows 365 ANC and new provisioning
+
+.PARAMETER Type
+
+.NOTES
+    Version: 1.0
+    Author: Nicolas CHEYMOL
+    Website : https://github.com/ncheymol
+    Created: 01/11/2024
+    Updated: 
+
+.HISTORY 
+    1.0 - Script created
+
+.LINK 
+
+.COPYRIGHT
+Copyright (c) Nicolas CHEYMOL. All rights reserved.
+#>
+
+Start-Transcript -Path "C:\temp\W365-Monitoring\W365-Monitoring_$(get-date -Format yyyMMddsshhmm).log" -Append
+
+# Variables
+$CertIssuer = "CERTIFICATE_ISSUER" # Placeholder for certificate issuer
+$AppId = 'APPLICATION_ID' # Placeholder for application ID
+$TenantId = 'TENANT_ID' # Placeholder for tenant ID
+$mailaddress = "EMAIL_ADDRESS" # Placeholder for email address
+
+#region auth
+################# Connect Entra ID ########################
+Write-Output  "$(get-date) ################# Connect Entra ID ########################
+"
+
+$Modules = @("Microsoft.Graph.Authentication") 
+$Modules | ForEach-Object {
+ 
+    if (-not (Get-Module -ListAvailable -Name $_)) {
+        Write-Host "Installing module $_ ..."
+        Try {
+            Install-Module -Name $_ -Scope CurrentUser -AllowClobber -Verbose
+        }
+        Catch {
+            Write-Error "Failed to install $_"
+            Break;
+        }
+    }
+ 
+    Import-Module $($_ )
+}
+ 
+# Importer le module Microsoft.Graph ou chaque sous module ( recommendé )
+# L'installation du module requiere les droits admin, donc l'authentification ne marche pas si on est avec un compte admin autre que le certificat user G2
+Import-Module Microsoft.Graph.Authentication
+
+
+# Bloc Try-Catch pour gérer les exceptions
+Try {
+# Rechercher le certificat dans le magasin de certificats de l'utilisateur actuel
+$Cert = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Issuer.StartsWith("$($CertIssuer)") }
+
+# Se connecter à Microsoft Graph en utilisant le TenantId, le ClientId et le certificat trouvé
+Connect-MgGraph -TenantId $TenantId -ClientId $AppId -Certificate $Cert 
+}
+Catch {
+Write-Host "Erreur lors de la connexion à MS Graph : $_"
+Break;
+}
+#endregion
+
+
+#region ANC
+####################### ANC W365 ############################
+Write-Output  "$(get-date) ####################### ANC W365 ############################"
+
+$URI = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/onPremisesConnections"
+$connectorsANC =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
+
+# Display information about the connectors
+foreach ($connectorANC in $connectorsANC.value) 
+{
+    $uri = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/onPremisesConnections/$($connectorANC.id)?select=healthCheckStatusDetails"
+    $healthCheckStatusDetails =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
+    $healthCheckStatusDetails = $($healthCheckStatusDetails.healthCheckStatusDetails.healthChecks)
+    
+    $i = 0
+    $msg = "
+        adDomainName: $($connectorANC.adDomainName)
+        id: $($connector.id)
+        healthCheckStatus: $($connectorANC.healthCheckStatus)
+        displayName: $($connectorANC.displayName)
+
+         ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status) 
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $(if ($healthCheckStatusDetails.Count -gt 10)
+            {
+        "$($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
+        $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)"
+            })
+        "
+    Write-Output $msg
+
+    # Check if the health status is not passed or running
+    if ($($connectorANC.healthCheckStatus) -ne "passed" -and $($connectorANC.healthCheckStatus) -ne "running")
+    {
+        # Load assemblies
+        [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+        
+        # Create an Outlook application instance
+        $Outlook = New-Object -comObject Outlook.Application
+
+        # Create a new email
+        $Mail = $Outlook.CreateItem(0)
+
+        # Fill in the email details
+        $Mail.To = "$($mailaddress)"
+        $Mail.Subject = "ANC Alert: $($connectorANC.displayName)"
+        $Mail.Body = "$msg"
+
+        # Send the email
+        $Mail.Send() 
+    }
+}
+
+#endregion
+
+#region W365 provisioning
+################# W365 Provisioning ########################
+Write-Output  "$(get-date) ################# W365 Provisioning ########################"
+
+$currentDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+$pastdate = (Get-Date).ToUniversalTime().AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ss.000Z")
+
+$uri = "https://graph.microsoft.com/beta/deviceManagement/auditEvents?`$filter=activityType eq 'UpdateDevicePrimaryUsers ManagedDevice' and activityDateTime gt $pastdate and activityDateTime le $currentdate&amp;`$orderby=activityDateTime desc"
+$audits =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
+$audits.value
+
+foreach ($audit in $audits.value)
+{
+    $applicationDisplayName = $audit.actor.applicationDisplayName
+    if ($applicationDisplayName -eq "Windows 365")
+    {
+        <# Placeholder for insufficient rights, work in progress
+        $deviceid = $audit.resources.resourceId
+        $uri = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/cloudPCs?`$Filter= managedDeviceId eq '$($deviceid)'"
+        $response = Invoke-RestMethod -Uri $uri -Headers @{Authorization = "Bearer $token"}
+        $response 
+           
+        $userid = $audit.resources.modifiedProperties.newvalue.Item(1)
+        $uri = "https://graph.microsoft.com/v1.0/users/$($userid)?`$select=displayName"
+        $user = Invoke-RestMethod -Uri $uri -Headers @{Authorization = "Bearer $token"}
+        $user
+        #>
+
+        $msg = "
+        deviceid: $($audit.resources.resourceId)
+        userid: $($audit.resources.modifiedProperties.newvalue.Item(1))
+        Last update: $($audit.activityDateTime) UTC
+        "
+        Write-Output $msg
+
+        # Create an Outlook application instance
+        $Outlook = New-Object -comObject Outlook.Application
+
+        # Create a new email
+        $Mail = $Outlook.CreateItem(0)
+
+        # Fill in the email details
+        $Mail.To = "$($mailaddress)"
+        $Mail.Subject = "New CloudPC provisioned: $deviceid"
+        $Mail.Body = "$msg"
+
+        # Send the email
+        $Mail.Send()   
+    }
+}
+#endregion
+
+Stop-Transcript
