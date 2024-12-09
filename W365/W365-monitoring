@@ -80,10 +80,10 @@ Break;
 Write-Output  "$(get-date) ####################### ANC W365 ############################"
 $URI = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/onPremisesConnections"
 $connectorsANC =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
-# Afficher les informations des ndesConnectors
+# Check status of connectors
 foreach ($connectorANC in $connectorsANC.value) 
     {
-    $uri = "https://graph.microsoft.com/v1.0/deviceManagement/virtualEndpoint/onPremisesConnections/$($connectorANC.id)?select=healthCheckStatusDetails"
+    
     $uri = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/onPremisesConnections/$($connectorANC.id)?select=healthCheckStatusDetails"
     $healthCheckStatusDetails =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
     $healthCheckStatusDetails = $($healthCheckStatusDetails.healthCheckStatusDetails.healthChecks)
@@ -122,15 +122,15 @@ foreach ($connectorANC in $connectorsANC.value)
         {
 
         # email
-        # Créer une instance de l'application Outlook
+        # Create Outlook COM instance
         $Outlook = New-Object -comObject Outlook.Application
-        # Créer un nouvel email
+        # Create New email
         $Mail = $Outlook.CreateItem(0)
-        # Remplir les détails de l'email
+        # Fill the email
         $Mail.To = "$($mailaddress)"
         $Mail.Subject = "Alerte ANC : $($connectorANC.displayName)"
         $Mail.Body = "$msg"
-        # Envoyer l'email
+        # Send the email
         if (!(Test-Path $tagfile))
             {
             $Mail.Send() 
