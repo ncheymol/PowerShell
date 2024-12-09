@@ -8,14 +8,15 @@
 .PARAMETER Type
 
 .NOTES
-    Version: 1.0
+    Version: 1.1
     Author: Nicolas CHEYMOL
     Website : https://github.com/ncheymol
     Created: 01/11/2024
-    Updated: 
+    Updated: 09/12/2024
 
 .HISTORY 
     1.0 - Script created
+    1.2 - Add tag to notify only once per day that the ANC is unhealthy, tag is removed once healthy
 
 .LINK 
 
@@ -23,7 +24,7 @@
 Copyright (c) Nicolas CHEYMOL. All rights reserved.
 #>
 
-Start-Transcript -Path "C:\temp\W365-Monitoring\W365-Monitoring_$(get-date -Format yyyMMddsshhmm).log" -Append
+Start-Transcript -Path "C:\temp\W365-Monitoring\W365-Monitoring_$(get-date -Format yyyyMMdd).log" -Append
 
 # Variables
 $CertIssuer = "CERTIFICATE_ISSUER" # Placeholder for certificate issuer
@@ -73,27 +74,25 @@ Break;
 #endregion
 
 
+ 
 #region ANC
 ####################### ANC W365 ############################
 Write-Output  "$(get-date) ####################### ANC W365 ############################"
-
 $URI = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/onPremisesConnections"
 $connectorsANC =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
-
-# Display information about the connectors
+# Afficher les informations des ndesConnectors
 foreach ($connectorANC in $connectorsANC.value) 
-{
+    {
+    $uri = "https://graph.microsoft.com/v1.0/deviceManagement/virtualEndpoint/onPremisesConnections/$($connectorANC.id)?select=healthCheckStatusDetails"
     $uri = "https://graph.microsoft.com/beta/deviceManagement/virtualEndpoint/onPremisesConnections/$($connectorANC.id)?select=healthCheckStatusDetails"
     $healthCheckStatusDetails =  Invoke-MgGraphRequest -Method GET -Uri $uri -ContentType "application/json"
     $healthCheckStatusDetails = $($healthCheckStatusDetails.healthCheckStatusDetails.healthChecks)
-    
     $i = 0
     $msg = "
         adDomainName: $($connectorANC.adDomainName)
         id: $($connector.id)
         healthCheckStatus: $($connectorANC.healthCheckStatus)
         displayName: $($connectorANC.displayName)
-
          ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status) 
         $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
         $($i++) ($($healthCheckStatusDetails.GetValue($i).endDateTime)) - $($healthCheckStatusDetails.GetValue($i).displayName) : $($healthCheckStatusDetails.GetValue($i).status)
@@ -113,30 +112,39 @@ foreach ($connectorANC in $connectorsANC.value)
             })
         "
     Write-Output $msg
-
-    # Check if the health status is not passed or running
-    if ($($connectorANC.healthCheckStatus) -ne "passed" -and $($connectorANC.healthCheckStatus) -ne "running")
+    if ($($healthCheckStatusDetails.GetValue(0).status) -eq "Warning" -and ($healthCheckStatusDetails.values | Select-String "Warning").count -eq 1)
     {
-        # Load assemblies
-        [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-        
-        # Create an Outlook application instance
-        $Outlook = New-Object -comObject Outlook.Application
-
-        # Create a new email
-        $Mail = $Outlook.CreateItem(0)
-
-        # Fill in the email details
-        $Mail.To = "$($mailaddress)"
-        $Mail.Subject = "ANC Alert: $($connectorANC.displayName)"
-        $Mail.Body = "$msg"
-
-        # Send the email
-        $Mail.Send() 
+    $connectorANC.healthCheckStatus = "passed"
     }
-}
+    $tagfile = "C:\temp\MS-Intune-Connector-Monitoring\$($connectorANC.displayName)_failed_$(get-date -Format yyyyMMdd).txt"
+    
+    if ($($connectorANC.healthCheckStatus) -ne "passed" -and $($connectorANC.healthCheckStatus) -ne "running" -and $($connectorANC.healthCheckStatus) -ne "pending")
+        {
 
+        # email
+        # Créer une instance de l'application Outlook
+        $Outlook = New-Object -comObject Outlook.Application
+        # Créer un nouvel email
+        $Mail = $Outlook.CreateItem(0)
+        # Remplir les détails de l'email
+        $Mail.To = "$($mailaddress)"
+        $Mail.Subject = "Alerte ANC : $($connectorANC.displayName)"
+        $Mail.Body = "$msg"
+        # Envoyer l'email
+        if (!(Test-Path $tagfile))
+            {
+            $Mail.Send() 
+            }
+        $msg | Out-File -FilePath $tagfile
+        }
+    Else 
+        {
+        Remove-Item -Path "$tagfile" -ErrorAction Ignore
+        }
+    }
 #endregion
+ 
+ 
 
 #region W365 provisioning
 ################# W365 Provisioning ########################
