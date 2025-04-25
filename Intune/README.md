@@ -19,3 +19,5 @@ Script descritions :
   Bitlocker-backupkey.ps1 : Force Windows 10 to save its Bitlocker recovery key in Azure AD
 
   PowerCFG-Autopilot.ps1 : Set High Perf and disable Sleep during Autopilot
+
+  Enforce-MDM-Enrollment_v2.ps1 : forces the computer to enroll to the MDM using the device identity
