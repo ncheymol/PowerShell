@@ -43,8 +43,6 @@ For more details, please refer to the [full license text](LICENSE).
 This project is created by Nicolas CHEYMOL. Please make sure to credit me as the original author when using or modifying this project.
 #>
 
-Start-Transcript -Path "C:\temp\W365-Monitoring\W365-Monitoring_$(get-date -Format yyyyMMdd).log" -Append
-
 # Variables
 $CertIssuer = "CERTIFICATE_ISSUER" # Placeholder for certificate issuer
 $AppId = 'APPLICATION_ID' # Placeholder for application ID
